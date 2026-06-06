@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autoevaluación</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 12pt;
+    color: #000;
+    background: #fff;
+    padding: 20px;
+    max-width: 820px;
+    margin: 0 auto;
+  }
+
+  .intro {
+    margin-bottom: 18px;
+    line-height: 1.6;
+    font-size: 12pt;
+  }
+
+  .intro p {
+    margin-bottom: 10px;
+  }
+
+  .instrucciones {
+    margin-bottom: 18px;
+  }
+
+  .instrucciones p {
+    font-weight: bold;
+    margin-bottom: 6px;
+    font-size: 12pt;
+  }
+
+  .instrucciones ol {
+    padding-left: 22px;
+    line-height: 1.8;
+    font-size: 12pt;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12pt;
+    font-family: Georgia, 'Times New Roman', serif;
+  }
+
+  th {
+    background: #fff;
+    border: 1px solid #000;
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: bold;
+    font-size: 12pt;
+  }
+
+  td {
+    border: 1px solid #000;
+    padding: 8px 10px;
+    vertical-align: top;
+    font-size: 12pt;
+  }
+
+  td.valoracion {
+    width: 160px;
+    vertical-align: middle;
+    text-align: center;
+  }
+
+  input[type="number"] {
+    width: 70px;
+    padding: 4px 6px;
+    font-size: 12pt;
+    font-family: Georgia, 'Times New Roman', serif;
+    border: 1px solid #999;
+    text-align: center;
+    -moz-appearance: textfield;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+  }
+
+  input[type="number"].error {
+    border-color: #cc0000;
+    background: #fff5f5;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 80px;
+    font-size: 12pt;
+    font-family: Georgia, 'Times New Roman', serif;
+    border: none;
+    resize: vertical;
+    padding: 4px;
+    outline: none;
+  }
+
+  .resultado-row td {
+    font-weight: bold;
+    background: #f9f9f9;
+  }
+
+  .resultado-valor {
+    font-size: 13pt;
+    font-weight: bold;
+  }
+
+  .msg-error {
+    color: #cc0000;
+    font-size: 10pt;
+    margin-top: 4px;
+    display: none;
+  }
+
+  .btn-wrapper {
+    margin-top: 16px;
+    text-align: left;
+  }
+
+  button {
+    padding: 8px 20px;
+    font-size: 12pt;
+    font-family: Georgia, 'Times New Roman', serif;
+    background: #fff;
+    border: 1px solid #000;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #f0f0f0;
+  }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <p>Hola. 👋🙂 Espero que estés súper bien. 😁</p>
+  <p>Ahora que has llegado al final de este periodo académico, es hora de hacer tu autoevaluación.</p>
+</div>
+
+<div class="instrucciones">
+  <p>Instrucciones</p>
+  <ol start="1">
+    <li>Lee atentamente cada enunciado y llena los espacios de la derecha con una calificación entre 1 y 5 ❗</li>
+    <li>En el último cuadro que hay en la parte inferior escribe tu opinión sobre la clase, sugerencias o alguna reflexión que quieras expresar sobre tu proceso en este primer periodo. 😊</li>
+  </ol>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>CRITERIO</th>
+      <th style="width:160px;">Valoración de 1 a 5</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <tr>
+      <td>
+        <strong>Clases 🏫</strong> : Me conecto puntualmente, hago preguntas, aporto ideas, respondo cuando se solicita y contribuyo a las discusiones.<br><br>
+        Cuando no asisto, envío la excusa y veo las grabaciones.
+      </td>
+      <td class="valoracion">
+        <input type="number" id="c1" min="1" max="5" placeholder="1–5" oninput="validar(this); calcular()">
+        <div class="msg-error" id="err1">Ingresa un valor entre 1 y 5.</div>
+      </td>
+    </tr>
+
+    <tr>
+      <td><strong>Contenidos 🖥️</strong> : Comprendo los contenidos de plataforma y de clase y puedo explicarlos con mis propias palabras.</td>
+      <td class="valoracion">
+        <input type="number" id="c2" min="1" max="5" placeholder="1–5" oninput="validar(this); calcular()">
+        <div class="msg-error" id="err2">Ingresa un valor entre 1 y 5.</div>
+      </td>
+    </tr>
+
+    <tr>
+      <td><strong>Aplicación de conceptos a mi realidad 👍</strong> : Relaciono lo aprendido con situaciones de mi entorno o el país, haciendo conexiones relevantes.</td>
+      <td class="valoracion">
+        <input type="number" id="c3" min="1" max="5" placeholder="1–5" oninput="validar(this); calcular()">
+        <div class="msg-error" id="err3">Ingresa un valor entre 1 y 5.</div>
+      </td>
+    </tr>
+
+    <tr>
+      <td><strong>Envío de actividades ✅</strong> : Entrego mis trabajos y actividades en las fechas acordadas, demostrando responsabilidad y organización.</td>
+      <td class="valoracion">
+        <input type="number" id="c4" min="1" max="5" placeholder="1–5" oninput="validar(this); calcular()">
+        <div class="msg-error" id="err4">Ingresa un valor entre 1 y 5.</div>
+      </td>
+    </tr>
+
+    <tr>
+      <td><strong>Calidad de los trabajos 💎</strong> : Mis trabajos están bien elaborados, son completos, claros, muestran esfuerzo y cumplen con los requisitos solicitados.</td>
+      <td class="valoracion">
+        <input type="number" id="c5" min="1" max="5" placeholder="1–5" oninput="validar(this); calcular()">
+        <div class="msg-error" id="err5">Ingresa un valor entre 1 y 5.</div>
+      </td>
+    </tr>
+
+    <tr>
+      <td><strong>Utilización consciente de la IA 🤖</strong> : Uso herramientas de Inteligencia Artificial de forma ética: para aprender, complementar mi trabajo y verificar información, pero no para copiar sin comprender.</td>
+      <td class="valoracion">
+        <input type="number" id="c6" min="1" max="5" placeholder="1–5" oninput="validar(this); calcular()">
+        <div class="msg-error" id="err6">Ingresa un valor entre 1 y 5.</div>
+      </td>
+    </tr>
+
+    <tr class="resultado-row">
+      <td>Total (sobre 30)</td>
+      <td class="valoracion"><span class="resultado-valor" id="total30">—</span></td>
+    </tr>
+
+    <tr class="resultado-row">
+      <td>Nota final (sobre 5)</td>
+      <td class="valoracion"><span class="resultado-valor" id="total5">—</span></td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+        <strong>¿Tienes algo por comentar? 👇</strong><br><br>
+        <textarea placeholder="Escribe aquí tu opinión, sugerencias o reflexión..."></textarea>
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<script>
+  function validar(input) {
+    var id = input.id;
+    var num = parseInt(id.replace('c', ''));
+    var errEl = document.getElementById('err' + num);
+    var val = parseFloat(input.value);
+    if (input.value !== '' && (isNaN(val) || val < 1 || val > 5)) {
+      input.classList.add('error');
+      errEl.style.display = 'block';
+    } else {
+      input.classList.remove('error');
+      errEl.style.display = 'none';
+    }
+  }
+
+  function calcular() {
+    var ids = ['c1','c2','c3','c4','c5','c6'];
+    var suma = 0;
+    var completos = 0;
+    var hayError = false;
+
+    for (var i = 0; i < ids.length; i++) {
+      var el = document.getElementById(ids[i]);
+      var val = parseFloat(el.value);
+      if (el.value !== '') {
+        if (isNaN(val) || val < 1 || val > 5) {
+          hayError = true;
+        } else {
+          suma += val;
+          completos++;
+        }
+      }
+    }
+
+    if (hayError || completos === 0) {
+      document.getElementById('total30').textContent = '—';
+      document.getElementById('total5').textContent = '—';
+      return;
+    }
+
+    document.getElementById('total30').textContent = suma + ' / 30';
+
+    if (completos === 6) {
+      var base5 = (suma / 30) * 5;
+      document.getElementById('total5').textContent = base5.toFixed(1) + ' / 5';
+    } else {
+      document.getElementById('total5').textContent = '—';
+    }
+  }
+</script>
+
+</body>
+</html>
