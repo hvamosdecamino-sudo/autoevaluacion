@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Autoevaluación</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -23,20 +25,14 @@
     font-size: 12pt;
   }
 
-  .intro p {
-    margin-bottom: 10px;
-  }
+  .intro p { margin-bottom: 10px; }
 
-  .instrucciones {
-    margin-bottom: 18px;
-  }
-
+  .instrucciones { margin-bottom: 18px; }
   .instrucciones p {
     font-weight: bold;
     margin-bottom: 6px;
     font-size: 12pt;
   }
-
   .instrucciones ol {
     padding-left: 22px;
     line-height: 1.8;
@@ -72,6 +68,30 @@
     text-align: center;
   }
 
+  .nombre-row td {
+    text-align: center;
+    font-weight: bold;
+    padding: 10px;
+  }
+
+  .nombre-row input[type="text"] {
+    width: 100%;
+    font-size: 12pt;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: bold;
+    text-align: center;
+    border: none;
+    border-bottom: 1px solid #999;
+    outline: none;
+    padding: 4px;
+    background: transparent;
+  }
+
+  .nombre-row input[type="text"]::placeholder {
+    font-weight: normal;
+    color: #aaa;
+  }
+
   input[type="number"] {
     width: 70px;
     padding: 4px 6px;
@@ -94,13 +114,15 @@
 
   textarea {
     width: 100%;
-    min-height: 80px;
+    min-height: 120px;
+    max-height: 120px;
     font-size: 12pt;
     font-family: Georgia, 'Times New Roman', serif;
     border: none;
-    resize: vertical;
+    resize: none;
     padding: 4px;
     outline: none;
+    overflow-y: auto;
   }
 
   .resultado-row td {
@@ -121,7 +143,7 @@
   }
 
   .btn-wrapper {
-    margin-top: 16px;
+    margin-top: 20px;
     text-align: left;
   }
 
@@ -134,8 +156,14 @@
     cursor: pointer;
   }
 
-  button:hover {
-    background: #f0f0f0;
+  button:hover { background: #f0f0f0; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .instruccion-entrega {
+    margin-top: 16px;
+    font-size: 11pt;
+    line-height: 1.6;
+    color: #333;
   }
 </style>
 </head>
@@ -148,13 +176,13 @@
 
 <div class="instrucciones">
   <p>Instrucciones</p>
-  <ol start="1">
+  <ol>
     <li>Lee atentamente cada enunciado y llena los espacios de la derecha con una calificación entre 1 y 5 ❗</li>
     <li>En el último cuadro que hay en la parte inferior escribe tu opinión sobre la clase, sugerencias o alguna reflexión que quieras expresar sobre tu proceso en este primer periodo. 😊</li>
   </ol>
 </div>
 
-<table>
+<table id="tabla-autoevaluacion">
   <thead>
     <tr>
       <th>CRITERIO</th>
@@ -162,6 +190,12 @@
     </tr>
   </thead>
   <tbody>
+
+    <tr class="nombre-row">
+      <td colspan="2">
+        <input type="text" id="nombre" placeholder="Escribe aquí tu nombre completo" maxlength="100">
+      </td>
+    </tr>
 
     <tr>
       <td>
@@ -227,17 +261,22 @@
     <tr>
       <td colspan="2">
         <strong>¿Tienes algo por comentar? 👇</strong><br><br>
-        <textarea placeholder="Escribe aquí tu opinión, sugerencias o reflexión..."></textarea>
+        <textarea id="comentario" placeholder="Escribe aquí tu opinión, sugerencias o reflexión..." maxlength="500"></textarea>
       </td>
     </tr>
 
   </tbody>
 </table>
 
+<div class="btn-wrapper">
+  <button id="btn-pdf" onclick="generarPDF()">⬇️ Descargar autoevaluación en PDF</button>
+</div>
+
+<p class="instruccion-entrega">Luego de diligenciar la autoevaluación, descarga el PDF con el botón de arriba y adjúntalo en el espacio correspondiente de la tarea.</p>
+
 <script>
   function validar(input) {
-    var id = input.id;
-    var num = parseInt(id.replace('c', ''));
+    var num = input.id.replace('c', '');
     var errEl = document.getElementById('err' + num);
     var val = parseFloat(input.value);
     if (input.value !== '' && (isNaN(val) || val < 1 || val > 5)) {
@@ -282,6 +321,134 @@
     } else {
       document.getElementById('total5').textContent = '—';
     }
+  }
+
+  function generarPDF() {
+    var nombre = document.getElementById('nombre').value.trim();
+    if (!nombre) {
+      alert('Por favor escribe tu nombre antes de descargar el PDF.');
+      document.getElementById('nombre').focus();
+      return;
+    }
+
+    var btn = document.getElementById('btn-pdf');
+    btn.disabled = true;
+    btn.textContent = 'Generando PDF...';
+
+    // Recopilar datos
+    var criterios = [
+      'Clases',
+      'Contenidos',
+      'Aplicación de conceptos a mi realidad',
+      'Envío de actividades',
+      'Calidad de los trabajos',
+      'Utilización consciente de la IA'
+    ];
+
+    var valores = [];
+    for (var i = 1; i <= 6; i++) {
+      var v = document.getElementById('c' + i).value;
+      valores.push(v !== '' ? v : '—');
+    }
+
+    var total30 = document.getElementById('total30').textContent;
+    var total5 = document.getElementById('total5').textContent;
+    var comentario = document.getElementById('comentario').value.trim();
+
+    // Generar PDF con jsPDF
+    var { jsPDF } = window.jspdf;
+    var doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    var margen = 20;
+    var anchoTotal = 170; // 210 - 40 (márgenes)
+    var anchoValor = 40;
+    var anchoCriterio = anchoTotal - anchoValor;
+    var y = 20;
+    var lineHeight = 7;
+
+    // Título
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.text('Autoevaluación', 105, y, { align: 'center' });
+    y += 10;
+
+    // Función para dibujar fila de tabla
+    function filaTabla(col1, col2, negrita, fondo) {
+      doc.setFont('helvetica', negrita ? 'bold' : 'normal');
+      doc.setFontSize(10);
+
+      // Calcular altura necesaria para el texto de col1
+      var lineas = doc.splitTextToSize(col1, anchoCriterio - 4);
+      var alturaFila = Math.max(lineas.length * lineHeight + 4, lineHeight + 4);
+
+      if (fondo) {
+        doc.setFillColor(245, 245, 245);
+        doc.rect(margen, y, anchoTotal, alturaFila, 'F');
+      }
+
+      doc.setDrawColor(0);
+      doc.rect(margen, y, anchoCriterio, alturaFila);
+      doc.rect(margen + anchoCriterio, y, anchoValor, alturaFila);
+
+      doc.setTextColor(0);
+      doc.text(lineas, margen + 2, y + lineHeight);
+
+      doc.setFont('helvetica', 'bold');
+      doc.text(col2, margen + anchoCriterio + anchoValor / 2, y + alturaFila / 2 + 3, { align: 'center' });
+
+      y += alturaFila;
+    }
+
+    // Encabezado de tabla
+    doc.setFillColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    var alturaEncabezado = lineHeight + 4;
+    doc.rect(margen, y, anchoCriterio, alturaEncabezado);
+    doc.rect(margen + anchoCriterio, y, anchoValor, alturaEncabezado);
+    doc.text('CRITERIO', margen + 2, y + lineHeight);
+    doc.text('Valoración', margen + anchoCriterio + anchoValor / 2, y + lineHeight, { align: 'center' });
+    y += alturaEncabezado;
+
+    // Nombre centrado
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    var alturaNombre = lineHeight + 6;
+    doc.rect(margen, y, anchoTotal, alturaNombre);
+    doc.text(nombre, margen + anchoTotal / 2, y + alturaNombre / 2 + 3, { align: 'center' });
+    y += alturaNombre;
+
+    // Filas de criterios
+    for (var j = 0; j < criterios.length; j++) {
+      filaTabla(criterios[j], valores[j], false, false);
+    }
+
+    // Totales
+    filaTabla('Total (sobre 30)', total30, true, true);
+    filaTabla('Nota final (sobre 5)', total5, true, true);
+
+    // Comentarios
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    var textoComentario = comentario !== '' ? comentario : '(Sin comentarios)';
+    var lineasComentario = doc.splitTextToSize(textoComentario, anchoTotal - 4);
+    var alturaComentario = Math.max(lineasComentario.length * lineHeight + 10, 30);
+
+    doc.rect(margen, y, anchoTotal, lineHeight + 4);
+    doc.text('¿Tienes algo por comentar?', margen + 2, y + lineHeight);
+    y += lineHeight + 4;
+
+    doc.setFont('helvetica', 'normal');
+    doc.rect(margen, y, anchoTotal, alturaComentario);
+    doc.text(lineasComentario, margen + 2, y + lineHeight);
+    y += alturaComentario;
+
+    // Nombre del archivo
+    var nombreArchivo = 'autoevaluacion_' + nombre.replace(/\s+/g, '_') + '.pdf';
+    doc.save(nombreArchivo);
+
+    btn.disabled = false;
+    btn.textContent = '⬇️ Descargar autoevaluación en PDF';
   }
 </script>
 
