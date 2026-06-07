@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Autoevaluación</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -184,18 +183,17 @@
 
 <table id="tabla-autoevaluacion">
   <thead>
+    <tr class="nombre-row">
+      <td colspan="2">
+        <input type="text" id="nombre" placeholder="Escribe aquí tu nombre completo" maxlength="100">
+      </td>
+    </tr>
     <tr>
       <th>CRITERIO</th>
       <th style="width:160px;">Valoración de 1 a 5</th>
     </tr>
   </thead>
   <tbody>
-
-    <tr class="nombre-row">
-      <td colspan="2">
-        <input type="text" id="nombre" placeholder="Escribe aquí tu nombre completo" maxlength="100">
-      </td>
-    </tr>
 
     <tr>
       <td>
@@ -335,14 +333,13 @@
     btn.disabled = true;
     btn.textContent = 'Generando PDF...';
 
-    // Recopilar datos
     var criterios = [
-      'Clases',
-      'Contenidos',
-      'Aplicación de conceptos a mi realidad',
-      'Envío de actividades',
-      'Calidad de los trabajos',
-      'Utilización consciente de la IA'
+      { titulo: 'Clases', texto: 'Me conecto puntualmente, hago preguntas, aporto ideas, respondo cuando se solicita y contribuyo a las discusiones.\nCuando no asisto, envío la excusa y veo las grabaciones.' },
+      { titulo: 'Contenidos', texto: 'Comprendo los contenidos de plataforma y de clase y puedo explicarlos con mis propias palabras.' },
+      { titulo: 'Aplicación de conceptos a mi realidad', texto: 'Relaciono lo aprendido con situaciones de mi entorno o el país, haciendo conexiones relevantes.' },
+      { titulo: 'Envío de actividades', texto: 'Entrego mis trabajos y actividades en las fechas acordadas, demostrando responsabilidad y organización.' },
+      { titulo: 'Calidad de los trabajos', texto: 'Mis trabajos estan bien elaborados, son completos, claros, muestran esfuerzo y cumplen con los requisitos solicitados.' },
+      { titulo: 'Utilización consciente de la IA', texto: 'Uso herramientas de Inteligencia Artificial de forma ética: para aprender, complementar mi trabajo y verificar información, pero no para copiar sin comprender.' }
     ];
 
     var valores = [];
@@ -355,16 +352,15 @@
     var total5 = document.getElementById('total5').textContent;
     var comentario = document.getElementById('comentario').value.trim();
 
-    // Generar PDF con jsPDF
     var { jsPDF } = window.jspdf;
     var doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-    var margen = 20;
-    var anchoTotal = 170; // 210 - 40 (márgenes)
-    var anchoValor = 40;
+    var margen = 15;
+    var anchoTotal = 180;
+    var anchoValor = 35;
     var anchoCriterio = anchoTotal - anchoValor;
-    var y = 20;
-    var lineHeight = 7;
+    var y = 15;
+    var lineH = 6;
 
     // Título
     doc.setFont('helvetica', 'bold');
@@ -372,78 +368,89 @@
     doc.text('Autoevaluación', 105, y, { align: 'center' });
     y += 10;
 
-    // Función para dibujar fila de tabla
-    function filaTabla(col1, col2, negrita, fondo) {
-      doc.setFont('helvetica', negrita ? 'bold' : 'normal');
+    // Fila nombre
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    var alturaNombre = lineH + 6;
+    doc.rect(margen, y, anchoTotal, alturaNombre);
+    doc.text(nombre, margen + anchoTotal / 2, y + alturaNombre / 2 + 2, { align: 'center' });
+    y += alturaNombre;
+
+    // Encabezados columnas
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    var alturaEnc = lineH + 2;
+    doc.rect(margen, y, anchoCriterio, alturaEnc);
+    doc.rect(margen + anchoCriterio, y, anchoValor, alturaEnc);
+    doc.text('CRITERIO', margen + 2, y + lineH - 1);
+    doc.text('Valoración', margen + anchoCriterio + anchoValor / 2, y + lineH - 1, { align: 'center' });
+    y += alturaEnc;
+
+    // Filas de criterios
+    for (var j = 0; j < criterios.length; j++) {
+      doc.setFont('helvetica', 'bold');
       doc.setFontSize(10);
+      var lineasTitulo = doc.splitTextToSize(criterios[j].titulo + ':', anchoCriterio - 4);
 
-      // Calcular altura necesaria para el texto de col1
-      var lineas = doc.splitTextToSize(col1, anchoCriterio - 4);
-      var alturaFila = Math.max(lineas.length * lineHeight + 4, lineHeight + 4);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      var lineasTexto = doc.splitTextToSize(criterios[j].texto, anchoCriterio - 4);
 
-      if (fondo) {
-        doc.setFillColor(245, 245, 245);
-        doc.rect(margen, y, anchoTotal, alturaFila, 'F');
-      }
+      var totalLineas = lineasTitulo.length + lineasTexto.length;
+      var alturaFila = totalLineas * lineH + 6;
 
-      doc.setDrawColor(0);
       doc.rect(margen, y, anchoCriterio, alturaFila);
       doc.rect(margen + anchoCriterio, y, anchoValor, alturaFila);
 
-      doc.setTextColor(0);
-      doc.text(lineas, margen + 2, y + lineHeight);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text(lineasTitulo, margen + 2, y + lineH);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.text(lineasTexto, margen + 2, y + lineH + lineasTitulo.length * lineH);
 
       doc.setFont('helvetica', 'bold');
-      doc.text(col2, margen + anchoCriterio + anchoValor / 2, y + alturaFila / 2 + 3, { align: 'center' });
+      doc.setFontSize(10);
+      doc.text(String(valores[j]), margen + anchoCriterio + anchoValor / 2, y + alturaFila / 2 + 3, { align: 'center' });
 
       y += alturaFila;
     }
 
-    // Encabezado de tabla
-    doc.setFillColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    var alturaEncabezado = lineHeight + 4;
-    doc.rect(margen, y, anchoCriterio, alturaEncabezado);
-    doc.rect(margen + anchoCriterio, y, anchoValor, alturaEncabezado);
-    doc.text('CRITERIO', margen + 2, y + lineHeight);
-    doc.text('Valoración', margen + anchoCriterio + anchoValor / 2, y + lineHeight, { align: 'center' });
-    y += alturaEncabezado;
-
-    // Nombre centrado
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    var alturaNombre = lineHeight + 6;
-    doc.rect(margen, y, anchoTotal, alturaNombre);
-    doc.text(nombre, margen + anchoTotal / 2, y + alturaNombre / 2 + 3, { align: 'center' });
-    y += alturaNombre;
-
-    // Filas de criterios
-    for (var j = 0; j < criterios.length; j++) {
-      filaTabla(criterios[j], valores[j], false, false);
+    // Totales
+    function filaTotalPDF(etiqueta, valor) {
+      doc.setFillColor(245, 245, 245);
+      var altFila = lineH + 4;
+      doc.rect(margen, y, anchoCriterio, altFila, 'FD');
+      doc.rect(margen + anchoCriterio, y, anchoValor, altFila, 'FD');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text(etiqueta, margen + 2, y + lineH);
+      doc.text(valor, margen + anchoCriterio + anchoValor / 2, y + lineH, { align: 'center' });
+      y += altFila;
     }
 
-    // Totales
-    filaTabla('Total (sobre 30)', total30, true, true);
-    filaTabla('Nota final (sobre 5)', total5, true, true);
+    filaTotalPDF('Total (sobre 30)', total30);
+    filaTotalPDF('Nota final (sobre 5)', total5);
 
-    // Comentarios
+    // Comentario
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
     var textoComentario = comentario !== '' ? comentario : '(Sin comentarios)';
     var lineasComentario = doc.splitTextToSize(textoComentario, anchoTotal - 4);
-    var alturaComentario = Math.max(lineasComentario.length * lineHeight + 10, 30);
+    var alturaEtiqueta = lineH + 2;
+    var alturaComentario = Math.max(lineasComentario.length * lineH + 6, 20);
 
-    doc.rect(margen, y, anchoTotal, lineHeight + 4);
-    doc.text('¿Tienes algo por comentar?', margen + 2, y + lineHeight);
-    y += lineHeight + 4;
+    doc.rect(margen, y, anchoTotal, alturaEtiqueta);
+    doc.text('Comentarios', margen + 2, y + lineH - 1);
+    y += alturaEtiqueta;
 
     doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
     doc.rect(margen, y, anchoTotal, alturaComentario);
-    doc.text(lineasComentario, margen + 2, y + lineHeight);
-    y += alturaComentario;
+    doc.text(lineasComentario, margen + 2, y + lineH);
 
-    // Nombre del archivo
+    // Guardar
     var nombreArchivo = 'autoevaluacion_' + nombre.replace(/\s+/g, '_') + '.pdf';
     doc.save(nombreArchivo);
 
