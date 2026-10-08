@@ -318,13 +318,43 @@
     }
   }
 
-  function generarPDF() {
+function generarPDF() {
     var nombre = document.getElementById('nombre').value.trim();
+    var comentario = document.getElementById('comentario').value.trim();
+    var ids = ['c1','c2','c3','c4','c5','c6'];
+    var hayVacios = false;
+
     if (!nombre) {
-      alert('Por favor escribe tu nombre antes de descargar el PDF.');
-      document.getElementById('nombre').focus();
-      return;
+      var inputNombre = document.getElementById('nombre');
+      inputNombre.style.borderBottom = '2px solid #cc0000';
+      inputNombre.focus();
+      hayVacios = true;
+    } else {
+      document.getElementById('nombre').style.borderBottom = '1px solid #999';
     }
+
+    for (var i = 0; i < ids.length; i++) {
+      var el = document.getElementById(ids[i]);
+      var val = parseFloat(el.value);
+      if (el.value === '' || isNaN(val) || val < 1 || val > 5) {
+        el.classList.add('error');
+        document.getElementById('err' + (i + 1)).style.display = 'block';
+        hayVacios = true;
+      }
+    }
+
+    if (!comentario) {
+      var ta = document.getElementById('comentario');
+      ta.style.border = '1px solid #cc0000';
+      ta.style.background = '#fff5f5';
+      hayVacios = true;
+    } else {
+      var ta = document.getElementById('comentario');
+      ta.style.border = 'none';
+      ta.style.background = 'transparent';
+    }
+
+    if (hayVacios) { return; }
 
     var btn = document.getElementById('btn-pdf');
     btn.disabled = true;
